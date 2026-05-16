@@ -9,8 +9,6 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: archlinux:latest
-    env:
-      PATH: "/root/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
     steps:
       - name: Checkout
@@ -24,11 +22,6 @@ jobs:
         run: |
           useradd -m builder
           echo "builder ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
-          # give builder access to cargo
-          cp -r /root/.cargo /home/builder/.cargo
-          cp -r /root/.rustup /home/builder/.rustup
-          chown -R builder:builder /home/builder/.cargo /home/builder/.rustup
-          echo 'export PATH="$HOME/.cargo/bin:$PATH"' >> /home/builder/.bashrc
           chown -R builder:builder .
 
       - name: Build all packages
@@ -44,8 +37,7 @@ jobs:
             chown -R builder:builder /tmp/build
 
             cd /tmp/build/pkg
-            sudo -u builder env PATH="/home/builder/.cargo/bin:/usr/bin:/bin" \
-              makepkg -s --noconfirm --noprogressbar
+            sudo -u builder makepkg -s --noconfirm --noprogressbar
 
             cp /tmp/build/pkg/*.pkg.tar.zst $GITHUB_WORKSPACE/repo/x86_64/
             cd $GITHUB_WORKSPACE
