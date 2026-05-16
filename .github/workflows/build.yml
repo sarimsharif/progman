@@ -29,22 +29,24 @@ jobs:
           chown -R builder:builder .
 
       - name: Build all packages
-        run: |
-          mkdir -p repo/x86_64
+      run: |
+        mkdir -p repo/x86_64
+        chown -R builder:builder repo
 
-          for pkgdir in packages/*/; do
-            echo "==> Building $pkgdir"
-            cp -r "$pkgdir" /tmp/build
-            cd /tmp/build
+        for pkgdir in packages/*/; do
+        echo "==> Building $pkgdir"
+      
+        mkdir -p /tmp/build
+        cp -r "$pkgdir" /tmp/build/pkg
+        chown -R builder:builder /tmp/build   # ← chown AFTER creating, inside the loop
 
-            sudo -u builder makepkg -s --noconfirm --noprogressbar
+        cd /tmp/build/pkg
+        sudo -u builder makepkg -s --noconfirm --noprogressbar
 
-            # Copy built package(s) to repo folder
-            cp *.pkg.tar.zst $GITHUB_WORKSPACE/repo/x86_64/
-            cd $GITHUB_WORKSPACE
-            rm -rf /tmp/build
-          done
-
+        cp /tmp/build/pkg/*.pkg.tar.zst $GITHUB_WORKSPACE/repo/x86_64/
+        cd $GITHUB_WORKSPACE
+        rm -rf /tmp/build
+      done
       - name: Generate repo database
         run: |
           cd repo/x86_64
