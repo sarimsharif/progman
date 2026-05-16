@@ -49,6 +49,8 @@ jobs:
         run: |
           cd repo/x86_64
           repo-add progman.db.tar.gz *.pkg.tar.zst
+          cp --dereference --remove-destination progman.db.tar.gz progman.db
+          cp --dereference --remove-destination progman.files.tar.gz progman.files
 
       - name: Create index page
         run: |
