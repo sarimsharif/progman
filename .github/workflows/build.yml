@@ -1,15 +1,16 @@
 name: Build and Deploy the repo
-
 on:
   push:
     branches: [main]
-  workflow_dispatch:   # lets you trigger manually too
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
     container:
       image: archlinux:latest
+    env:
+      PATH: "/root/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
     steps:
       - name: Checkout
@@ -17,40 +18,45 @@ jobs:
 
       - name: Install build tools
         run: |
-          pacman -Syu --noconfirm base-devel git 
+          pacman -Syu --noconfirm base-devel git
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-          source $HOME/.cargo/env
 
-      # Create a non-root build user
       - name: Create build user
         run: |
           useradd -m builder
           echo "builder ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+          # give builder access to cargo
+          cp -r /root/.cargo /home/builder/.cargo
+          cp -r /root/.rustup /home/builder/.rustup
+          chown -R builder:builder /home/builder/.cargo /home/builder/.rustup
+          echo 'export PATH="$HOME/.cargo/bin:$PATH"' >> /home/builder/.bashrc
           chown -R builder:builder .
 
       - name: Build all packages
-      run: |
-        mkdir -p repo/x86_64
-        chown -R builder:builder repo
+        run: |
+          mkdir -p repo/x86_64
+          chown -R builder:builder repo
 
-        for pkgdir in packages/*/; do
-        echo "==> Building $pkgdir"
-      
-        mkdir -p /tmp/build
-        cp -r "$pkgdir" /tmp/build/pkg
-        chown -R builder:builder /tmp/build   # ← chown AFTER creating, inside the loop
+          for pkgdir in packages/*/; do
+            echo "==> Building $pkgdir"
 
-        cd /tmp/build/pkg
-        sudo -u builder makepkg -s --noconfirm --noprogressbar
+            mkdir -p /tmp/build
+            cp -r "$pkgdir" /tmp/build/pkg
+            chown -R builder:builder /tmp/build
 
-        cp /tmp/build/pkg/*.pkg.tar.zst $GITHUB_WORKSPACE/repo/x86_64/
-        cd $GITHUB_WORKSPACE
-        rm -rf /tmp/build
-      done
+            cd /tmp/build/pkg
+            sudo -u builder env PATH="/home/builder/.cargo/bin:/usr/bin:/bin" \
+              makepkg -s --noconfirm --noprogressbar
+
+            cp /tmp/build/pkg/*.pkg.tar.zst $GITHUB_WORKSPACE/repo/x86_64/
+            cd $GITHUB_WORKSPACE
+            rm -rf /tmp/build
+          done
+
       - name: Generate repo database
         run: |
           cd repo/x86_64
-          repo-add my-repo.db.tar.gz *.pkg.tar.zst
+          repo-add progman.db.tar.gz *.pkg.tar.zst
 
       - name: Create index page
         run: |
@@ -61,9 +67,9 @@ jobs:
           <body>
             <p>Add to <code>/etc/pacman.conf</code>:</p>
             <pre>
-          [my-repo]
+          [progman]
           SigLevel = Optional TrustAll
-          Server = https://sarimsharif.github.io/my-arch-repo/x86_64
+          Server = https://sarimsharif.github.io/progman/x86_64
             </pre>
           </body>
           </html>
@@ -74,4 +80,4 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./repo
-          force_orphan: true   # keeps gh-pages branch clean, no history buildup
+          force_orphan: true
