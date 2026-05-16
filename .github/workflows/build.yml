@@ -1,0 +1,74 @@
+name: Build and Deploy the repo
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:   # lets you trigger manually too
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install build tools
+        run: |
+          pacman -Syu --noconfirm base-devel git 
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+      # Create a non-root build user
+      - name: Create build user
+        run: |
+          useradd -m builder
+          echo "builder ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+          chown -R builder:builder .
+
+      - name: Build all packages
+        run: |
+          mkdir -p repo/x86_64
+
+          for pkgdir in packages/*/; do
+            echo "==> Building $pkgdir"
+            cp -r "$pkgdir" /tmp/build
+            cd /tmp/build
+
+            sudo -u builder makepkg -s --noconfirm --noprogressbar
+
+            # Copy built package(s) to repo folder
+            cp *.pkg.tar.zst $GITHUB_WORKSPACE/repo/x86_64/
+            cd $GITHUB_WORKSPACE
+            rm -rf /tmp/build
+          done
+
+      - name: Generate repo database
+        run: |
+          cd repo/x86_64
+          repo-add my-repo.db.tar.gz *.pkg.tar.zst
+
+      - name: Create index page
+        run: |
+          cat > repo/index.html <<'EOF'
+          <!DOCTYPE html>
+          <html>
+          <head><title>progman repo</title></head>
+          <body>
+            <p>Add to <code>/etc/pacman.conf</code>:</p>
+            <pre>
+          [my-repo]
+          SigLevel = Optional TrustAll
+          Server = https://sarimsharif.github.io/my-arch-repo/x86_64
+            </pre>
+          </body>
+          </html>
+          EOF
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./repo
+          force_orphan: true   # keeps gh-pages branch clean, no history buildup
