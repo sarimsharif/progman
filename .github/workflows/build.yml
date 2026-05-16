@@ -18,8 +18,7 @@ jobs:
 
       - name: Install build tools
         run: |
-          pacman -Syu --noconfirm base-devel git
-          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+          pacman -Syu --noconfirm base-devel git rust
 
       - name: Create build user
         run: |
