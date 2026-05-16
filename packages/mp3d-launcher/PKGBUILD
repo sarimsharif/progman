@@ -1,5 +1,5 @@
 # packages/mp3d-launcher/PKGBUILD
-pkgname=progos-mineplace3d-launcher
+pkgname=mp3d-launcher
 pkgver=0.2.0
 pkgrel=1
 replaces=('progos-mineplace3d-launcher')
