@@ -49,9 +49,6 @@ jobs:
         run: |
           cd repo/x86_64
           repo-add progman.db.tar.gz *.pkg.tar.zst
-          # copy the actual tar.gz as plain .db so GitHub Pages serves it directly
-          cp progman.db.tar.gz progman.db
-          cp progman.files.tar.gz progman.files
 
       - name: Create index page
         run: |
