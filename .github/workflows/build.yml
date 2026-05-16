@@ -18,7 +18,8 @@ jobs:
       - name: Install build tools
         run: |
           pacman -Syu --noconfirm base-devel git 
-          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+          source $HOME/.cargo/env
 
       # Create a non-root build user
       - name: Create build user
