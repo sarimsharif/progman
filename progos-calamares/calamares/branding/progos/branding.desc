@@ -1,0 +1,33 @@
+# calamares/branding/progos/branding.desc
+---
+componentName: progos
+
+# Strings shown throughout the installer
+strings:
+  productName:         "ProgOS"
+  shortProductName:    "ProgOS"
+  version:             "1.0"
+  shortVersion:        "1.0"
+  versionedName:       "ProgOS 1.0"
+  shortVersionedName:  "ProgOS 1.0"
+  bootloaderEntryName: "ProgOS"
+  productUrl:          "https://github.com/sarimsharif/progman"
+  supportUrl:          "https://github.com/sarimsharif/progman/issues"
+  knownIssuesUrl:      "https://github.com/sarimsharif/progman/issues"
+  releaseNotesUrl:     "https://github.com/sarimsharif/progman"
+
+# Images (paths relative to this branding folder)
+images:
+  productLogo:    "logo.png"
+  productIcon:    "logo.png"
+  productWelcome: "logo.png"
+
+# Slideshow shown during installation (show.qml in this folder)
+slideshow: "show.qml"
+
+# Colours used in the installer UI
+style:
+  sidebarBackground:    "#1a1a2e"
+  sidebarText:          "#e0e0e0"
+  sidebarTextSelect:    "#ffffff"
+  sidebarTextHighlight: "#4a90d9"

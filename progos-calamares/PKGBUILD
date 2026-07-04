@@ -1,0 +1,31 @@
+# Maintainer: sarimsharif
+pkgname=progos-calamares
+pkgver=1.0.0
+pkgrel=1
+pkgdesc="Calamares installer configuration for ProgOS"
+arch=('any')
+url="https://github.com/sarimsharif/progman"
+license=('GPL3')
+depends=('calamares')
+source=()
+sha256sums=()
+
+package() {
+    # Main settings
+    install -Dm644 "${startdir}/calamares/settings.conf" \
+        "${pkgdir}/etc/calamares/settings.conf"
+
+    # Module configs
+    for f in "${startdir}/calamares/modules/"*.conf; do
+        install -Dm644 "$f" \
+            "${pkgdir}/etc/calamares/modules/$(basename $f)"
+    done
+
+    # Branding
+    install -Dm644 "${startdir}/calamares/branding/progos/branding.desc" \
+        "${pkgdir}/usr/share/calamares/branding/progos/branding.desc"
+    install -Dm644 "${startdir}/calamares/branding/progos/show.qml" \
+        "${pkgdir}/usr/share/calamares/branding/progos/show.qml"
+    install -Dm644 "${startdir}/calamares/branding/progos/logo.png" \
+        "${pkgdir}/usr/share/calamares/branding/progos/logo.png" 2>/dev/null || true
+}
