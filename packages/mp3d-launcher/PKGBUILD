@@ -10,7 +10,7 @@ arch=('x86_64')
 url="https://github.com/Muhtasim-Rasheed/mineplace3d-launcher"
 license=('MIT')
 source=("mineplace3d-launcher-linux-x86_64::https://github.com/Muhtasim-Rasheed/mineplace3d-launcher/releases/download/v${pkgver}/mineplace3d-launcher-linux-x86_64")
-sha256sums=('771cccfc18d04f5114efbafd8a91b46a9029dc84d93149c5a1d1ab93c2eee3ae')
+sha256sums=('17596745d8dfbc4076c4ce88aaabd225e11b6daba2eac8c9ffc4ee5f5331130b')
 
 package() {
     install -Dm755 "$srcdir/mineplace3d-launcher-linux-x86_64" "$pkgdir/usr/bin/mineplace3d-launcher"
